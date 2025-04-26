@@ -1,0 +1,54 @@
+[project]
+name = "parts-api"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Brandon Diaz",email = "brandon64@hotmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12, <3.13"
+package-mode = false
+dependencies = [
+    "fastapi (>=0.115.12,<0.116.0)",
+    "sqlalchemy[asyncio] (>=2.0.40,<3.0.0)",
+    "asyncpg (>=0.30.0,<0.31.0)",
+    "python-jose[cryptography] (>=3.4.0,<4.0.0)",
+    "loguru (>=0.7.3,<0.8.0)",
+    "pydantic (>=2.11.3,<3.0.0)",
+    "alembic (>=1.15.2,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+coverage = "^7.8.0"
+bandit = "^1.8.3"
+ruff = "^0.11.7"
+mypy = "^1.15.0"
+pre-commit = "^4.2.0"
+commitizen = "^4.6.0"
+
+[tool.pytest.ini_options]
+addopts = "--cov=./ --cov-report=term-missing"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["."]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+tag_format = "$version"
+version_scheme = "semver2"
+version_provider = "pep621"
+update_changelog_on_bump = true
+major_version_zero = true
+
