@@ -2,10 +2,10 @@ help: ## Show this help message and exit
 	@grep -E '^[a-zA-Z_-]+:.*?## ' Makefile | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
 install: ## Install Poetry and all dependencies
-	pip install poetry && poetry install
+	pip install poetry && poetry install --no-root
 
 check: ## Run ruff, mypy, and bandit checks
-	poetry run ruff . && poetry run mypy . && poetry run bandit -r .
+	poetry run ruff check . && poetry run mypy . && poetry run bandit -r .
 
 format: ## Auto-format code with ruff
 	poetry run ruff check . --fix

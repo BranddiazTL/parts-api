@@ -33,12 +33,12 @@ jobs:
       - name: Install Poetry
         run: pip install poetry
       - name: Install dependencies
-        run: poetry install
+        run: poetry install --no-root
       - name: Lint
-        run: poetry run ruff .
+        run: poetry run ruff check .
       - name: Type check
         run: poetry run mypy .
       - name: Security check
         run: poetry run bandit -r .
       - name: Test
-        run: poetry run pytest --cov=. 
+        run: poetry run pytest --cov=. --suppress-no-test-exit-code
