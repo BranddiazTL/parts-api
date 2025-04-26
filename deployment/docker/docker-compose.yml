@@ -5,25 +5,32 @@ services:
     image: postgres:16
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: parts_db
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-parts_db}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
   api:
-    build: ..
+    build:
+      context: ../../
+      dockerfile: deployment/docker/Dockerfile
     command: poetry run uvicorn main:app --host 0.0.0.0 --port 8000
     volumes:
-      - ..:/app
+      - ../../:/app
     ports:
       - "8000:8000"
     depends_on:
       - db
     environment:
-      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/parts_db
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-parts_db}
+      POSTGRES_HOST: ${POSTGRES_HOST:-db}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@${POSTGRES_HOST:-db}:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-parts_db}
 
 volumes:
   postgres_data: 
