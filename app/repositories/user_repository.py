@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -37,3 +37,7 @@ class UserRepository(BaseRepository[User]):
         """Create a new user from a UserCreate Pydantic schema."""
         user_data = user.model_dump()
         return await self.create(session, user_data)
+
+    async def list_all(self, session: AsyncSession) -> List[User]:
+        result = await session.execute(select(self.model))
+        return list(result.scalars().all())
