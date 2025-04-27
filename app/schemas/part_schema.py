@@ -36,5 +36,4 @@ class PartResponse(PartBase):
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}

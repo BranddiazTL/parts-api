@@ -30,7 +30,11 @@ class BaseRepository(Generic[T]):
 
     async def create(self, session: AsyncSession, obj_in: Any) -> T:
         """Create a new object from a Pydantic schema or dict."""
-        db_obj = self.model(**obj_in.dict())
+        if isinstance(obj_in, dict):
+            data = obj_in
+        else:
+            data = obj_in.model_dump()
+        db_obj = self.model(**data)
         session.add(db_obj)
         await session.commit()
         await session.refresh(db_obj)
@@ -46,7 +50,11 @@ class BaseRepository(Generic[T]):
         db_obj = result.scalars().first()
         if not db_obj:
             return None
-        for field, value in obj_in.dict(exclude_unset=True).items():
+        if isinstance(obj_in, dict):
+            data = obj_in
+        else:
+            data = obj_in.model_dump(exclude_unset=True)
+        for field, value in data.items():
             setattr(db_obj, field, value)
         await session.commit()
         await session.refresh(db_obj)

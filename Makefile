@@ -39,3 +39,7 @@ commit: ## Interactive commit with Commitizen and version bump
 
 bump: ## Bump API versioning using SEMVER format
 	poetry run cz bump || true
+
+clean-docker: ## Stop containers, remove images and volumes related to this project
+	docker compose -p parts -f deployment/docker/docker-compose.yml down -v --rmi all --remove-orphans
+	docker volume prune -f

@@ -1,21 +1,29 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, model_validator, EmailStr
 from typing import Optional
 import uuid
+from datetime import datetime
+from app.models.user import UserRole
 
 
 class UserBase(BaseModel):
     """Base schema for User with common fields."""
 
     username: Optional[str] = None
-    email: str
+    email: EmailStr
     is_active: Optional[bool] = True
+    role: Optional[UserRole] = UserRole.MEMBER
 
-    @field_validator("username", mode="before")
-    def set_username_default(cls, v, info):
+    @model_validator(mode="before")
+    @classmethod
+    def set_username_default(cls, data):
         """Set username to email if not provided."""
-        if v is not None:
-            return v
-        return info.data.get("email")
+        if (
+            isinstance(data, dict)
+            and data.get("username") is None
+            and data.get("email")
+        ):
+            data["username"] = data["email"]
+        return data
 
 
 class UserCreate(UserBase):
@@ -31,14 +39,14 @@ class UserUpdate(BaseModel):
     email: Optional[str] = None
     password: Optional[str] = None
     is_active: Optional[bool] = None
+    role: Optional[UserRole] = None
 
 
 class UserResponse(UserBase):
     """Schema for returning a User, including id and timestamps."""
 
     id: uuid.UUID
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
