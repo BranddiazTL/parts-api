@@ -1,6 +1,6 @@
 [project]
 name = "parts-api"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = [
     {name = "Brandon Diaz",email = "brandon64@hotmail.com"}
@@ -55,4 +55,7 @@ version_scheme = "semver2"
 version_provider = "pep621"
 update_changelog_on_bump = true
 major_version_zero = true
+
+[tool.ruff]
+exclude = ["migrations/versions"]
 

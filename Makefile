@@ -10,7 +10,7 @@ check: ## Run ruff, mypy, and bandit checks
 	poetry run ruff check . && poetry run mypy . && poetry run bandit -r .
 
 format: ## Auto-format code with ruff
-	poetry run ruff check . --fix
+	poetry run ruff format .
 
 migrate: ## Run Alembic migrations
 	poetry run alembic upgrade head
@@ -35,5 +35,7 @@ commit: ## Interactive commit with Commitizen and version bump
 	else \
 		echo "No unstaged changes to add."; \
 	fi; \
-	poetry run cz commit; \
+	poetry run cz commit;
+
+bump: ## Bump API versioning using SEMVER format
 	poetry run cz bump || true
