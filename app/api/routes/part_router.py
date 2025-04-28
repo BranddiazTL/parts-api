@@ -1,22 +1,25 @@
-from fastapi import APIRouter, Depends, status, Response, Query
+from datetime import datetime
+from typing import Any, List, Optional
+
+from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List, Optional, Any
+
+from app.api.dependencies import get_db_session
+from app.models.part import CollaboratorPermission, PartVisibility
+from app.models.user import User
 from app.schemas.part_schema import (
-    PartCreate,
-    PartUpdate,
-    PartResponse,
     PartCollaboratorResponse,
+    PartCreate,
     PartListQueryParams,
     PartPaginatedResponse,
+    PartResponse,
     PartSortBy,
+    PartUpdate,
     SortOrder,
+    TopWordsResponse,
 )
-from app.models.part import CollaboratorPermission, PartVisibility
 from app.services.part_service import PartService
-from app.api.dependencies import get_db_session
 from app.services.security_service import get_current_active_user
-from app.models.user import User
-from datetime import datetime
 
 router = APIRouter(prefix="/parts", tags=["parts"])
 
@@ -62,6 +65,14 @@ async def list_parts(
     )
     result = await part_service.list_parts(session, current_user, params)
     return result
+
+
+@router.get("/top-words", response_model=TopWordsResponse)
+async def get_top_words(
+    session: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_active_user),
+) -> TopWordsResponse:
+    return await part_service.get_top_words_in_descriptions(session)
 
 
 @router.get("/{part_id}", response_model=PartResponse)

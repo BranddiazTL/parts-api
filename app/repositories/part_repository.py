@@ -1,10 +1,17 @@
-from typing import Optional, List
+from typing import List, Optional
+
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, or_
-from app.models.part import Part, CollaboratorPermission, PartVisibility
-from .base_repository import BaseRepository
-from app.models.part import PartCollaborator
+
+from app.models.part import (
+    CollaboratorPermission,
+    Part,
+    PartCollaborator,
+    PartVisibility,
+)
 from app.schemas.part_schema import SortOrder
+
+from .base_repository import BaseRepository
 
 
 class PartRepository(BaseRepository[Part]):
@@ -148,3 +155,7 @@ class PartRepository(BaseRepository[Part]):
         total = count_result.scalar_one()
 
         return items, total
+
+    async def get_all_descriptions(self, session: AsyncSession) -> list[str]:
+        result = await session.execute(select(self.model.description))
+        return [desc for desc in result.scalars().all() if desc]

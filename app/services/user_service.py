@@ -1,10 +1,13 @@
 from typing import List
+
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.models.user import User, UserRole
 from app.repositories.user_repository import UserRepository
-from app.schemas.user_schema import UserCreate, UserUpdate, UserResponse
+from app.schemas.user_schema import UserCreate, UserResponse, UserUpdate
 from app.services.security_service import get_password_hash
+from app.utils.validation import raise_if_duplicate
 
 
 class UserService:
@@ -37,15 +40,14 @@ class UserService:
     async def create_user(
         self, session: AsyncSession, user_data: UserCreate
     ) -> UserResponse:
-        existing_user = await self.user_repository.get_by_email(
-            session, user_data.email
+        await raise_if_duplicate(
+            repo=self.user_repository,
+            session=session,
+            field_value_pairs=[
+                (User.email, user_data.email),
+                (User.username, user_data.username),
+            ],
         )
-        if existing_user:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="User with this email already exists",
-            )
-
         user_dict = user_data.model_dump()
         user_dict["password"] = get_password_hash(user_dict["password"])
 

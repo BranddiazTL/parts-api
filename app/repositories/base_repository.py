@@ -1,6 +1,8 @@
-from typing import TypeVar, Generic, Type, Optional, Any
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy import select
+from typing import Any, Generic, Optional, Type, TypeVar
+
+from sqlalchemy import or_, select
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
 from app.core.config import settings
 
 T = TypeVar("T")
@@ -71,3 +73,23 @@ class BaseRepository(Generic[T]):
         await session.delete(db_obj)
         await session.commit()
         return True
+
+    async def exists_by_fields(
+        self, session: AsyncSession, field_value_pairs: list[tuple[Any, Any]]
+    ) -> Optional[tuple[Any, Any]]:
+        if not field_value_pairs:
+            return None
+
+        conditions = [field == value for field, value in field_value_pairs]
+        query = select(self.model).where(or_(*conditions))
+        result = await session.execute(query)
+        found = result.scalars().first()
+        if not found:
+            return None
+
+        # Find which field matched
+        for field, value in field_value_pairs:
+            if getattr(found, field.key) == value:
+                return field, value
+
+        return None

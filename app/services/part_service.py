@@ -1,22 +1,26 @@
+import re
+from collections import Counter
 from typing import Optional
+
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.part import (
-    PartVisibility,
-    CollaboratorPermission,
-)
+
+from app.models.part import CollaboratorPermission, Part, PartVisibility
 from app.models.user import User, UserRole
 from app.repositories.part_repository import PartRepository
 from app.repositories.user_repository import UserRepository
 from app.schemas.part_schema import (
-    PartCreate,
-    PartUpdate,
-    PartResponse,
     PartCollaboratorResponse,
-    PartUpdateForCollaborators,
+    PartCreate,
     PartListQueryParams,
     PartPaginatedResponse,
+    PartResponse,
+    PartUpdate,
+    PartUpdateForCollaborators,
+    TopWordsResponse,
+    WordFrequencyResponse,
 )
+from app.utils.validation import raise_if_duplicate
 
 
 class PartService:
@@ -80,6 +84,13 @@ class PartService:
     async def create_part(
         self, session: AsyncSession, part_data: PartCreate, owner: User
     ) -> PartResponse:
+        await raise_if_duplicate(
+            repo=self.part_repository,
+            session=session,
+            field_value_pairs=[
+                (Part.sku, part_data.sku),
+            ],
+        )
         part_dict = part_data.model_dump()
         part_dict["owner_id"] = str(owner.id)
         part = await self.part_repository.create(session, part_dict)
@@ -183,3 +194,20 @@ class PartService:
         await self._check_part_owner_access(part, owner)
 
         await self.part_repository.remove_collaborator(session, part_id, user_id)
+
+    async def get_top_words_in_descriptions(
+        self, session: AsyncSession, top_number_of_words: int = 5
+    ) -> TopWordsResponse:
+        descriptions = await self.part_repository.get_all_descriptions(session)
+
+        words = []
+        for desc in descriptions:
+            words += re.findall(r"\b\w+\b", desc.lower())
+        counter = Counter(words)
+
+        # here the magic happens with heaps under the most_common method
+        most_common = counter.most_common(top_number_of_words)
+
+        return TopWordsResponse(
+            top_words=[WordFrequencyResponse(word=w, count=c) for w, c in most_common]
+        )

@@ -1,10 +1,11 @@
-from pydantic import BaseModel, field_validator
-from typing import Optional, List
 import uuid
 from datetime import datetime
-from app.models.part import PartVisibility
 from enum import Enum
-from pydantic import Field
+from typing import List, Optional
+
+from pydantic import BaseModel, Field, field_validator
+
+from app.models.part import PartVisibility
 
 
 class PartFieldValidatorMixin:
@@ -103,3 +104,12 @@ class PartListQueryParams(BaseModel):
 class PartPaginatedResponse(BaseModel):
     items: List[PartResponse]
     total: int
+
+
+class WordFrequencyResponse(BaseModel):
+    word: str
+    count: int
+
+
+class TopWordsResponse(BaseModel):
+    top_words: list[WordFrequencyResponse]
