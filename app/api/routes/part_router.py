@@ -1,17 +1,22 @@
-from fastapi import APIRouter, Depends, status, Response
+from fastapi import APIRouter, Depends, status, Response, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List, Optional
+from typing import List, Optional, Any
 from app.schemas.part_schema import (
     PartCreate,
     PartUpdate,
     PartResponse,
     PartCollaboratorResponse,
+    PartListQueryParams,
+    PartPaginatedResponse,
+    PartSortBy,
+    SortOrder,
 )
-from app.models.part import CollaboratorPermission
+from app.models.part import CollaboratorPermission, PartVisibility
 from app.services.part_service import PartService
 from app.api.dependencies import get_db_session
 from app.services.security_service import get_current_active_user
 from app.models.user import User
+from datetime import datetime
 
 router = APIRouter(prefix="/parts", tags=["parts"])
 
@@ -27,12 +32,36 @@ async def create_part(
     return await part_service.create_part(session, part, current_user)
 
 
-@router.get("", response_model=List[PartResponse])
+@router.get("", response_model=PartPaginatedResponse)
 async def list_parts(
     session: AsyncSession = Depends(get_db_session),
     current_user: Optional[User] = Depends(get_current_active_user),
-) -> List[PartResponse]:
-    return await part_service.list_parts(session, current_user)
+    visibility: Optional[str] = Query(None),
+    is_active: Optional[bool] = Query(None),
+    name: Optional[List[str]] = Query(None),
+    start_date: Optional[datetime] = Query(None),
+    end_date: Optional[datetime] = Query(None),
+    sort_by: Optional[str] = Query("created_at"),
+    sort_order: Optional[str] = Query("desc"),
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+) -> Any:
+    visibility_enum = PartVisibility(visibility.upper()) if visibility else None
+    sort_by_enum = PartSortBy(sort_by) if sort_by else PartSortBy.created_at
+    sort_order_enum = SortOrder(sort_order) if sort_order else SortOrder.desc
+    params = PartListQueryParams(
+        visibility=visibility_enum,
+        is_active=is_active,
+        name=name,
+        start_date=start_date,
+        end_date=end_date,
+        sort_by=sort_by_enum,
+        sort_order=sort_order_enum,
+        limit=limit,
+        offset=offset,
+    )
+    result = await part_service.list_parts(session, current_user, params)
+    return result
 
 
 @router.get("/{part_id}", response_model=PartResponse)

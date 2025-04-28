@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.part import (
@@ -14,6 +14,8 @@ from app.schemas.part_schema import (
     PartResponse,
     PartCollaboratorResponse,
     PartUpdateForCollaborators,
+    PartListQueryParams,
+    PartPaginatedResponse,
 )
 
 
@@ -126,26 +128,36 @@ class PartService:
         await self.part_repository.delete(session, part_id)
 
     async def list_parts(
-        self, session: AsyncSession, user: Optional[User]
-    ) -> List[PartResponse]:
+        self, session: AsyncSession, user: Optional[User], params: PartListQueryParams
+    ) -> PartPaginatedResponse:
         if user and user.role == UserRole.ADMIN:
-            parts = await self.part_repository.list_all(session)
-
-            return [PartResponse.model_validate(p) for p in parts]
+            items, total = await self.part_repository.list_filtered(session, params)
+            return PartPaginatedResponse(
+                items=[PartResponse.model_validate(p) for p in items], total=total
+            )
 
         if user:
-            owned = await self.part_repository.list_by_owner(session, str(user.id))
-            collab = await self.part_repository.list_by_collaborator(
-                session, str(user.id)
+            owned, owned_total = await self.part_repository.list_filtered(
+                session, params, owner_id=str(user.id)
             )
-            public = await self.part_repository.list_public(session)
-            parts = list({p.id: p for p in (owned + collab + public)}.values())
+            collab, collab_total = await self.part_repository.list_filtered(
+                session, params, collaborator_id=str(user.id)
+            )
+            public, public_total = await self.part_repository.list_filtered(
+                session, params, public_only=True
+            )
+            parts = {p.id: p for p in (owned + collab + public)}
+            return PartPaginatedResponse(
+                items=[PartResponse.model_validate(p) for p in parts.values()],
+                total=len(parts),
+            )
 
-            return [PartResponse.model_validate(p) for p in parts]
-
-        parts = await self.part_repository.list_public(session)
-
-        return [PartResponse.model_validate(p) for p in parts]
+        items, total = await self.part_repository.list_filtered(
+            session, params, public_only=True
+        )
+        return PartPaginatedResponse(
+            items=[PartResponse.model_validate(p) for p in items], total=total
+        )
 
     async def add_collaborator(
         self,

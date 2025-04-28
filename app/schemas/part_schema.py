@@ -1,8 +1,10 @@
 from pydantic import BaseModel, field_validator
-from typing import Optional
+from typing import Optional, List
 import uuid
 from datetime import datetime
 from app.models.part import PartVisibility
+from enum import Enum
+from pydantic import Field
 
 
 class PartFieldValidatorMixin:
@@ -71,3 +73,33 @@ class PartUpdateForCollaborators(BaseModel):
     sku: Optional[str] = None
     description: Optional[str] = None
     weight_ounces: Optional[int] = None
+
+
+class PartSortBy(str, Enum):
+    visibility = "visibility"
+    is_active = "is_active"
+    name = "name"
+    created_at = "created_at"
+    updated_at = "updated_at"
+
+
+class SortOrder(str, Enum):
+    asc = "asc"
+    desc = "desc"
+
+
+class PartListQueryParams(BaseModel):
+    visibility: Optional[PartVisibility] = None
+    is_active: Optional[bool] = None
+    name: Optional[List[str]] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    sort_by: Optional[PartSortBy] = PartSortBy.created_at
+    sort_order: Optional[SortOrder] = SortOrder.desc
+    limit: Optional[int] = Field(default=20, ge=1, le=100)
+    offset: Optional[int] = Field(default=0, ge=0)
+
+
+class PartPaginatedResponse(BaseModel):
+    items: List[PartResponse]
+    total: int
