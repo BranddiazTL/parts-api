@@ -34,8 +34,12 @@ class Part(Base):
 
 class PartCollaborator(Base):
     __tablename__ = "part_collaborator"
-    part_id: Mapped[str] = mapped_column(ForeignKey("part.id", name="fk_partcollaborator_part_id"), nullable=False)
-    user_id: Mapped[str] = mapped_column(ForeignKey("user.id", name="fk_partcollaborator_user_id"), nullable=False)
+    part_id: Mapped[str] = mapped_column(
+        ForeignKey("part.id", name="fk_partcollaborator_part_id"), nullable=False
+    )
+    user_id: Mapped[str] = mapped_column(
+        ForeignKey("user.id", name="fk_partcollaborator_user_id"), nullable=False
+    )
     permission: Mapped[CollaboratorPermission] = mapped_column(
         Enum(CollaboratorPermission, native_enum=False),
         default=CollaboratorPermission.READ,

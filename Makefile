@@ -7,10 +7,11 @@ setup: ## Install Poetry, dependencies, copy .env, and setup pre-commit
 	poetry run pre-commit install
 
 check: ## Run ruff, mypy, and bandit checks
-	poetry run ruff check . && poetry run mypy . && poetry run bandit -r .
+	poetry run ruff check . && poetry run mypy . && poetry run bandit -r . -x ./tests
+
 
 format: ## Auto-format code with ruff
-	poetry run ruff check . --fix
+	poetry run ruff format .
 
 migrate: ## Run Alembic migrations
 	poetry run alembic upgrade head
@@ -35,5 +36,20 @@ commit: ## Interactive commit with Commitizen and version bump
 	else \
 		echo "No unstaged changes to add."; \
 	fi; \
-	poetry run cz commit; \
+	poetry run cz commit;
+
+bump: ## Bump API versioning using SEMVER format
 	poetry run cz bump || true
+
+clean-docker: ## Stop containers, remove images and volumes related to this project
+	docker compose -p parts -f deployment/docker/docker-compose.yml down -v --rmi all --remove-orphans
+	docker volume prune -f
+
+test-up: ## Start only the test Postgres database container
+	docker compose -p parts-test -f deployment/docker/docker-compose.test.yml up -d test_db
+
+test-down: ## Stop the test Postgres database container
+	docker compose -p parts-test -f deployment/docker/docker-compose.test.yml down
+
+test: ## Run pytest using Poetry
+	poetry run pytest

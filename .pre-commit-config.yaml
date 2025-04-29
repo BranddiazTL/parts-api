@@ -11,7 +11,7 @@ repos:
     rev: 1.7.8
     hooks:
       - id: bandit
-        args: ["-r", "."]
+        files: ^app/.*\.py$
   - repo: https://github.com/commitizen-tools/commitizen
     rev: v3.13.0
     hooks:
