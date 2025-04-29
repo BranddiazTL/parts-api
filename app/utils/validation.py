@@ -1,7 +1,10 @@
 from fastapi import HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
-async def raise_if_duplicate(repo, session, field_value_pairs, model=None):
+async def raise_if_duplicate(
+    repo, session: AsyncSession, field_value_pairs, model=None
+):
     """
     Checks for duplicates and raises an exception with a dynamic message if found.
     :param repo: The repository instance from the repositores module

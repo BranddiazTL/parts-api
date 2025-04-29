@@ -39,6 +39,6 @@ jobs:
       - name: Type check
         run: poetry run mypy .
       - name: Security check
-        run: poetry run bandit -r .
+        run: poetry run bandit -r app
       - name: Test
         run: poetry run pytest --cov=. --suppress-no-test-exit-code

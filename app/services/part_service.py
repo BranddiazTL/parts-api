@@ -50,7 +50,7 @@ class PartService:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
             )
-        if user.role == UserRole.ADMIN or part.owner_id == user.id:
+        if user.role == UserRole.ADMIN or str(part.owner_id) == str(user.id):
             return
         collaborator = await self.part_repository.get_collaborator(
             session, str(part.id), str(user.id)
@@ -64,7 +64,7 @@ class PartService:
         self, session: AsyncSession, part: PartResponse, user: User
     ) -> None:
         """Check if user has edit access to part, raise 403 if not."""
-        if user.role == UserRole.ADMIN or part.owner_id == user.id:
+        if user.role == UserRole.ADMIN or str(part.owner_id) == str(user.id):
             return
         collaborator = await self.part_repository.get_collaborator(
             session, str(part.id), str(user.id)
@@ -76,7 +76,7 @@ class PartService:
 
     async def _check_part_owner_access(self, part: PartResponse, user: User) -> None:
         """Check if user is owner or admin, raise 403 if not."""
-        if user.role != UserRole.ADMIN and part.owner_id != user.id:
+        if user.role != UserRole.ADMIN and str(part.owner_id) != str(user.id):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
             )
@@ -111,7 +111,9 @@ class PartService:
         part = await self._get_part_or_404(session, part_id)
         await self._check_part_edit_access(session, part, user)
 
-        is_owner_or_admin = user.role == UserRole.ADMIN or part.owner_id == user.id
+        is_owner_or_admin = user.role == UserRole.ADMIN or str(part.owner_id) == str(
+            user.id
+        )
         if is_owner_or_admin:
             update_fields = part_data.model_dump(exclude_unset=True)
         else:

@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-from app.models.part import PartVisibility
+from app.models.part import PartVisibility, CollaboratorPermission
 
 
 class PartFieldValidatorMixin:
@@ -62,7 +62,7 @@ class PartCollaboratorResponse(BaseModel):
 
     part_id: str
     user_id: str
-    permission: str
+    permission: CollaboratorPermission
 
     model_config = {"from_attributes": True}
 

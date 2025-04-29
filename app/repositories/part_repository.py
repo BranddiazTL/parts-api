@@ -90,7 +90,7 @@ class PartRepository(BaseRepository[Part]):
 
     async def list_public(self, session: AsyncSession) -> List[Part]:
         result = await session.execute(
-            select(self.model).where(self.model.visibility == "PUBLIC")
+            select(self.model).where(self.model.visibility == PartVisibility.PUBLIC)
         )
 
         return list(result.scalars().all())
@@ -134,14 +134,16 @@ class PartRepository(BaseRepository[Part]):
         if filters:
             query = query.where(*filters)
 
-        sort_attr = getattr(self.model, params.sort_by.value, self.model.created_at)
+        sort_attr = self.model.created_at
+        if params.sort_by:
+            sort_attr = getattr(self.model, params.sort_by.value, sort_attr)
 
         if params.sort_order == SortOrder.desc:
-            sort_attr = sort_attr.desc()
+            order_by_clause = sort_attr.desc()
         else:
-            sort_attr = sort_attr.asc()
+            order_by_clause = sort_attr.asc()
 
-        query = query.order_by(sort_attr)
+        query = query.order_by(order_by_clause)
         query = query.offset(params.offset).limit(params.limit)
 
         result = await session.execute(query)

@@ -42,6 +42,8 @@ async def authenticate_user(
     session: AsyncSession, username: str, password: str
 ) -> Optional[User]:
     user = await user_repository.get_by_username(session, username)
+    if not user:
+        user = await user_repository.get_by_email(session, email=username)
 
     if not user or not verify_password(password, user.password):
         return None
@@ -71,6 +73,9 @@ async def get_current_user(
         raise credentials_exception
 
     user = await user_repository.get_by_username(session, username=token_data.username)
+    if not user:
+        user = await user_repository.get_by_email(session, email=token_data.username)
+
     if user is None:
         raise credentials_exception
 

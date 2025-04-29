@@ -1,4 +1,4 @@
-from pydantic import BaseModel, model_validator, EmailStr
+from pydantic import BaseModel, model_validator, EmailStr, Field
 from typing import Optional
 import uuid
 from datetime import datetime
@@ -8,7 +8,7 @@ from app.models.user import UserRole
 class UserBase(BaseModel):
     """Base schema for User with common fields."""
 
-    username: Optional[str] = None
+    username: Optional[str] = Field(default=None, max_length=50)
     email: EmailStr
     is_active: Optional[bool] = True
     role: Optional[UserRole] = UserRole.MEMBER
@@ -35,7 +35,7 @@ class UserCreate(UserBase):
 class UserUpdate(BaseModel):
     """Schema for updating an existing User."""
 
-    username: Optional[str] = None
+    username: Optional[str] = Field(default=None, max_length=50)
     email: Optional[str] = None
     password: Optional[str] = None
     is_active: Optional[bool] = None
