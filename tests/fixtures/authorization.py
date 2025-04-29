@@ -1,13 +1,13 @@
 from typing import AsyncGenerator
 
-import pytest
 import httpx
-from sqlalchemy.ext.asyncio import AsyncSession
+import pytest
 from faker import Faker
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.services.security_service import create_access_token
-from tests.factories.user_factory import UserFactory
 from tests.constants.user import UserTestConstants
+from tests.factories.user_factory import UserFactory
 
 fake = Faker()
 

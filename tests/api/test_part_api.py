@@ -1,10 +1,11 @@
-import pytest
-import httpx
 import random
+import uuid
 from typing import Any, Dict, Union
+
+import httpx
+import pytest
 from faker import Faker
 from starlette import status
-import uuid
 
 from app.models.part import PartVisibility
 

@@ -1,15 +1,16 @@
-import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
-from faker import Faker
 import random
-from fastapi import HTTPException
 
-from app.models.user import User
+import pytest
+from faker import Faker
+from fastapi import HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.models.part import Part, PartVisibility
+from app.models.user import User
 from app.schemas.part_schema import PartCreate, PartUpdate
 from app.services.part_service import PartService
-from tests.factories.user_factory import UserFactory
 from tests.factories.part_factory import PartFactory
+from tests.factories.user_factory import UserFactory
 
 pytestmark = pytest.mark.asyncio
 

@@ -1,19 +1,21 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+
 from fastapi import Depends, HTTPException, status
-from jose import jwt, JWTError
+from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.security import (
-    pwd_context,
-    SECRET_KEY,
-    ALGORITHM,
-    ACCESS_TOKEN_EXPIRE_MINUTES,
-    oauth2_scheme,
-)
-from app.schemas.security_schema import TokenData
-from app.repositories.user_repository import UserRepository
-from app.models.user import User
+
 from app.api.dependencies import get_db_session
+from app.core.security import (
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+    ALGORITHM,
+    SECRET_KEY,
+    oauth2_scheme,
+    pwd_context,
+)
+from app.models.user import User
+from app.repositories.user_repository import UserRepository
+from app.schemas.security_schema import TokenData
 
 user_repository = UserRepository()
 

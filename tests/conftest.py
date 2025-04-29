@@ -1,27 +1,23 @@
 from typing import AsyncGenerator
 
-import pytest
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy.pool import NullPool
 import httpx
+import pytest
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import ProgrammingError
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.pool import NullPool
 
+from app.api.dependencies import get_db_session as app_get_db_session
 from app.core.config import settings
 from app.main import app as main_app
 from app.models import Base
 from tests.factories.user_factory import UserFactory
-from tests.fixtures.authorization import client_user  # noqa: F401
 from tests.fixtures.authorization import client_collaborator  # noqa: F401
 from tests.fixtures.authorization import client_superuser  # noqa: F401
+from tests.fixtures.authorization import client_user  # noqa: F401
+from tests.fixtures.authorization import collaborator_token_headers  # noqa: F401
 from tests.fixtures.authorization import superuser_token_headers  # noqa: F401
 from tests.fixtures.authorization import user_token_headers  # noqa: F401
-from tests.fixtures.authorization import collaborator_token_headers  # noqa: F401
-
-from app.api.dependencies import (
-    get_db_session as app_get_db_session,
-)
-
 
 TEST_DATABASE_URL = settings.database_url.replace("_db", "_test_db")
 DEFAULT_POSTGRES_URL = settings.database_url.replace(settings.POSTGRES_DB, "postgres")

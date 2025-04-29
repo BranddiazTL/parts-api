@@ -1,7 +1,9 @@
-from sqlalchemy import String, Integer, Boolean, ForeignKey, Enum
-from sqlalchemy.orm import Mapped, mapped_column
-from .base import Base
 from enum import StrEnum
+
+from sqlalchemy import Boolean, Enum, ForeignKey, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column
+
+from .base import Base
 
 
 class PartVisibility(StrEnum):

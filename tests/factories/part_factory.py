@@ -1,7 +1,8 @@
+import random
+
 import factory
 from factory.alchemy import SQLAlchemyModelFactory
 from faker import Faker
-import random
 
 from app.models.part import Part, PartVisibility
 

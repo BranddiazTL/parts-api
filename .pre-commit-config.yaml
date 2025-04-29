@@ -12,6 +12,12 @@ repos:
     hooks:
       - id: bandit
         files: ^app/.*\.py$
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: ["--profile", "black"]
+        exclude: ^migrations/versions/
   - repo: https://github.com/commitizen-tools/commitizen
     rev: v3.13.0
     hooks:

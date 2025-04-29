@@ -26,6 +26,7 @@ dependencies = [
     "bcrypt (<4.1.0)",
     "factory-boy (>=3.3.3,<4.0.0)",
     "httpx (>=0.28.1,<0.29.0)",
+    "isort (>=6.0.1,<7.0.0)",
 ]
 
 
@@ -72,3 +73,8 @@ major_version_zero = true
 
 [tool.ruff]
 exclude = ["migrations/versions"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
+skip_glob = ["migrations/versions"]

@@ -1,7 +1,9 @@
-from pydantic import BaseModel, model_validator, EmailStr, Field
-from typing import Optional
 import uuid
 from datetime import datetime
+from typing import Optional
+
+from pydantic import BaseModel, EmailStr, Field, model_validator
+
 from app.models.user import UserRole
 
 

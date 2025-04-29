@@ -7,7 +7,7 @@ setup: ## Install Poetry, dependencies, copy .env, and setup pre-commit
 	poetry run pre-commit install
 
 check: ## Run ruff, mypy, and bandit checks
-	poetry run ruff check . && poetry run mypy . && poetry run bandit -r . -x ./tests
+	poetry run ruff check . && poetry run mypy . && poetry run bandit -r . -x ./tests && poetry run isort --check-only --profile black .
 
 
 format: ## Auto-format code with ruff

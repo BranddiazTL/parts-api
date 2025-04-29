@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-from app.models.part import PartVisibility, CollaboratorPermission
+from app.models.part import CollaboratorPermission, PartVisibility
 
 
 class PartFieldValidatorMixin:

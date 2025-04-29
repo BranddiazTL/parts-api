@@ -1,7 +1,9 @@
-from sqlalchemy import String, Boolean, Enum
-from sqlalchemy.orm import Mapped, mapped_column
-from .base import Base
 from enum import StrEnum
+
+from sqlalchemy import Boolean, Enum, String
+from sqlalchemy.orm import Mapped, mapped_column
+
+from .base import Base
 
 
 class UserRole(StrEnum):
