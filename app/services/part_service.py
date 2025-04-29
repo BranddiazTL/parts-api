@@ -3,6 +3,7 @@ from collections import Counter
 from typing import Optional
 
 from fastapi import HTTPException, status
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.part import CollaboratorPermission, Part, PartVisibility
@@ -84,6 +85,7 @@ class PartService:
     async def create_part(
         self, session: AsyncSession, part_data: PartCreate, owner: User
     ) -> PartResponse:
+        logger.info(f"Creating part with SKU={part_data.sku} for user_id={owner.id}")
         await raise_if_duplicate(
             repo=self.part_repository,
             session=session,
@@ -94,12 +96,15 @@ class PartService:
         part_dict = part_data.model_dump()
         part_dict["owner_id"] = str(owner.id)
         part = await self.part_repository.create(session, part_dict)
-
+        logger.info(f"Part created with id={part.id}")
         return PartResponse.model_validate(part)
 
     async def get_part(
         self, session: AsyncSession, part_id: str, user: Optional[User]
     ) -> PartResponse:
+        logger.info(
+            f"Fetching part with id={part_id} for user_id={getattr(user, 'id', None)}"
+        )
         part = await self._get_part_or_404(session, part_id)
         await self._check_part_access(session, part, user)
 
@@ -108,6 +113,7 @@ class PartService:
     async def update_part(
         self, session: AsyncSession, part_id: str, part_data: PartUpdate, user: User
     ) -> PartResponse:
+        logger.info(f"Updating part id={part_id} by user_id={user.id}")
         part = await self._get_part_or_404(session, part_id)
         await self._check_part_edit_access(session, part, user)
 
@@ -129,16 +135,18 @@ class PartService:
             update_fields = collaborator_update.model_dump(exclude_unset=True)
 
         updated = await self.part_repository.update(session, part_id, update_fields)
-
+        logger.info(f"Part updated id={part_id}")
         return PartResponse.model_validate(updated)
 
     async def delete_part(
         self, session: AsyncSession, part_id: str, user: User
     ) -> None:
+        logger.info(f"Deleting part id={part_id} by user_id={user.id}")
         part = await self._get_part_or_404(session, part_id)
         await self._check_part_owner_access(part, user)
 
         await self.part_repository.delete(session, part_id)
+        logger.info(f"Part deleted id={part_id}")
 
     async def list_parts(
         self, session: AsyncSession, user: Optional[User], params: PartListQueryParams
@@ -180,22 +188,29 @@ class PartService:
         permission: CollaboratorPermission,
         owner: User,
     ) -> PartCollaboratorResponse:
+        logger.info(
+            f"Adding collaborator user_id={user_id} to part_id={part_id} by owner_id={owner.id}"
+        )
         part = await self._get_part_or_404(session, part_id)
 
         await self._check_part_owner_access(part, owner)
         collaborator = await self.part_repository.add_collaborator(
             session, part_id, user_id, permission
         )
-
+        logger.info(f"Collaborator user_id={user_id} added to part_id={part_id}")
         return PartCollaboratorResponse.model_validate(collaborator)
 
     async def remove_collaborator(
         self, session: AsyncSession, part_id: str, user_id: str, owner: User
     ) -> None:
+        logger.info(
+            f"Deleting collaborator user_id={user_id} from part_id={part_id} by owner_id={owner.id}"
+        )
         part = await self._get_part_or_404(session, part_id)
         await self._check_part_owner_access(part, owner)
 
         await self.part_repository.remove_collaborator(session, part_id, user_id)
+        logger.info(f"Collaborator user_id={user_id} deleted from part_id={part_id}")
 
     async def get_top_words_in_descriptions(
         self, session: AsyncSession, top_number_of_words: int = 5

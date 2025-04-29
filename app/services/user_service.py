@@ -1,6 +1,7 @@
 from typing import List
 
 from fastapi import HTTPException, status
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User, UserRole
@@ -40,6 +41,9 @@ class UserService:
     async def create_user(
         self, session: AsyncSession, user_data: UserCreate
     ) -> UserResponse:
+        logger.info(
+            f"Creating user with email={user_data.email} and username={user_data.username}"
+        )
         await raise_if_duplicate(
             repo=self.user_repository,
             session=session,
@@ -52,11 +56,15 @@ class UserService:
         user_dict["password"] = get_password_hash(user_dict["password"])
 
         user = await self.user_repository.create(session, user_dict)
+        logger.info(f"User created with id={user.id}")
         return UserResponse.model_validate(user)
 
     async def get_user(
         self, session: AsyncSession, user_id: str, current_user: User
     ) -> UserResponse:
+        logger.info(
+            f"Fetching user with id={user_id} by current_user_id={current_user.id}"
+        )
         user = await self._get_user_or_404(session, user_id)
         await self._check_user_access(user, current_user)
         return UserResponse.model_validate(user)
@@ -68,6 +76,7 @@ class UserService:
         user_data: UserUpdate,
         current_user: User,
     ) -> UserResponse:
+        logger.info(f"Updating user id={user_id} by current_user_id={current_user.id}")
         user = await self._get_user_or_404(session, user_id)
         await self._check_user_access(user, current_user)
 
@@ -76,18 +85,23 @@ class UserService:
             update_data["password"] = get_password_hash(update_data["password"])
 
         updated_user = await self.user_repository.update(session, user_id, update_data)
+        logger.info(f"User updated id={user_id}")
         return UserResponse.model_validate(updated_user)
 
     async def delete_user(
         self, session: AsyncSession, user_id: str, current_user: User
     ) -> None:
+        logger.info(f"Deleting user id={user_id} by current_user_id={current_user.id}")
         user = await self._get_user_or_404(session, user_id)
         await self._check_user_access(user, current_user)
         await self.user_repository.delete(session, user_id)
+        logger.info(f"User deleted id={user_id}")
 
     async def list_users(
         self, session: AsyncSession, current_user: User
     ) -> List[UserResponse]:
+        logger.info(f"Listing users by admin user_id={current_user.id}")
         await self._check_admin_access(current_user)
         users = await self.user_repository.list_all(session)
+        logger.info(f"Total users found: {len(users)}")
         return [UserResponse.model_validate(user) for user in users]
